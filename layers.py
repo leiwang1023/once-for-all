@@ -31,6 +31,10 @@ class My2DLayer(MyModule):
 
     def __init__(self, in_channels, out_channels,
                  use_bn=True, act_func='relu', dropout_rate=0, ops_order='weight_bn_act'):
+        """
+        Args:
+            osp_order: 通过 _ 分割字符串，变为三个操作, 决定bn 层在op前还是后，默认bn在后，搜索了一下，全部默認都是bn在後
+        """
         super(My2DLayer, self).__init__()
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -75,10 +79,20 @@ class My2DLayer(MyModule):
 
     @property
     def ops_list(self):
+        """split by _
+        """
         return self.ops_order.split('_')
 
     @property
     def bn_before_weight(self):
+        """
+        Args:
+            self.ops_list: ops_order split by _ \
+                必须包括bn 和weight 字段，且以这两个字段开头
+
+        returns:
+            bool:  如果bn在前True, 如果weight 在前为False
+        """
         for op in self.ops_list:
             if op == 'bn':
                 return True
@@ -122,6 +136,13 @@ class ConvLayer(My2DLayer):
     def __init__(self, in_channels, out_channels,
                  kernel_size=3, stride=1, dilation=1, groups=1, bias=False, has_shuffle=False,
                  use_bn=True, act_func='relu', dropout_rate=0, ops_order='weight_bn_act'):
+        """
+        Args:
+            in_channels: 输入 inp
+            out_channels: 输出 oup
+            has_shuffle: # TODO
+            ops_order: # TODO
+        """
         # default normal 3x3_Conv with bn and relu
         self.kernel_size = kernel_size
         self.stride = stride

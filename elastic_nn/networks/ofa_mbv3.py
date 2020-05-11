@@ -14,10 +14,23 @@ from imagenet_codebase.utils import make_divisible, int2list
 
 
 class OFAMobileNetV3(MobileNetV3):
+    """定义OFA网络结构
+    """
 
     def __init__(self, n_classes=1000, bn_param=(0.1, 1e-5), dropout_rate=0.1, base_stage_width=None,
                  width_mult_list=1.0, ks_list=3, expand_ratio_list=6, depth_list=4):
+        """
+        Args:
+            n_classes: 分类类数
+            bn_param: bn参数
+            dropout_rate: 用在哪些层里面呢
+            width_mult_list: 在单层layer重复一些操作[~~网络基础宽度缩放 X 并不是~~]
+            ks_list: 卷积核的候选大小
+            expand_ratio_list: 网络宽度/channel数的扩大倍数
+            depth_list: 网络深度/layer的重复/堆叠次数
+        """
 
+        # int2list 将列表，元组，整数都变为一个列表
         self.width_mult_list = int2list(width_mult_list, 1)
         self.ks_list = int2list(ks_list, 1)
         self.expand_ratio_list = int2list(expand_ratio_list, 1)
@@ -30,28 +43,31 @@ class OFAMobileNetV3(MobileNetV3):
         self.depth_list.sort()
 
         base_stage_width = [16, 24, 40, 80, 112, 160, 960, 1280]
-
+        # make_divisible 使得卷积channel数为8的倍数，并以8为基底3舍4入
         final_expand_width = [
             make_divisible(base_stage_width[-2] * max(self.width_mult_list), 8) for _ in self.width_mult_list
         ]
         last_channel = [
             make_divisible(base_stage_width[-1] * max(self.width_mult_list), 8) for _ in self.width_mult_list
         ]
-
+        # 步长，决定下采样; 激活函数; se指的是,难道是self-attention
         stride_stages = [1, 2, 2, 2, 1, 2]
         act_stages = ['relu', 'relu', 'relu', 'h_swish', 'h_swish', 'h_swish']
         se_stages = [False, False, True, False, True, True]
+        # 深度的配置除了第一个卷积，其他五层都可能expand
         if depth_list is None:
             n_block_list = [1, 2, 3, 4, 2, 3]
             self.depth_list = [4, 4]
             print('Use MobileNetV3 Depth Setting')
         else:
             n_block_list = [1] + [max(self.depth_list)] * 5
+        # 宽度/channel数配置
         width_list = []
         for base_width in base_stage_width[:-2]:
             width = [make_divisible(base_width * width_mult, 8) for width_mult in self.width_mult_list]
             width_list.append(width)
 
+        # width_list好想和我想象的功能不太一样，我以为是初始channel的expand倍数
         input_channel = width_list[0]
         # first conv layer
         if len(set(input_channel)) == 1:

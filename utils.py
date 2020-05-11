@@ -213,6 +213,10 @@ def make_divisible(v, divisor, min_val=None):
 
 
 def build_activation(act_func, inplace=True):
+    """
+    Returns:
+        activation/None
+    """
     if act_func == 'relu':
         return nn.ReLU(inplace=inplace)
     elif act_func == 'relu6':

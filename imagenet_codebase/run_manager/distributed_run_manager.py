@@ -13,8 +13,16 @@ from imagenet_codebase.data_providers.base_provider import MyRandomResizedCrop
     
 
 class DistributedRunManager:
+    """定义模型相关操作
+    """
     
     def __init__(self, path, net, run_config: RunConfig, hvd_compression, backward_steps=1, is_root=False, init=True):
+        """
+        Args:
+            path: 表示kernel size depth width任务相关文件的路径
+            net: 网络结构
+            run_config: 参数配置
+        """
         self.path = path
         self.net = net
         self.run_config = run_config

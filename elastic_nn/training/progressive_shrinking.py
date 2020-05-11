@@ -75,6 +75,20 @@ def validate(run_manager, epoch=0, is_test=True, image_size_list=None,
 
 
 def train_one_epoch(run_manager, args, epoch, warmup_epochs=0, warmup_lr=0):
+    """训练OFA模型
+
+    Args:
+        run_manager: 定义了模型相关
+        args: 参数配置
+        epoch: epoch of training loop
+        warmup: # TODO
+        warmup: # TODO
+
+    Returns:
+        losses: 损失函数
+        top1: top1 acc
+        top5: top5 acc
+    """
     dynamic_net = run_manager.net
 
     # switch to train mode
@@ -176,10 +190,18 @@ def train_one_epoch(run_manager, args, epoch, warmup_epochs=0, warmup_lr=0):
 
 
 def train(run_manager, args, validate_func=None):
+    """training loop for OFA
+
+    Args:
+        run_manager: 猜测这是一个包含了一个深度学习模型训练要素的包, net, data, loss, optim 读一下源码再来注释  # TODO
+        args: 一些配置
+        validate_func: 验证相关
+    """
     if validate_func is None:
         validate_func = validate
 
     for epoch in range(run_manager.start_epoch, run_manager.run_config.n_epochs + args.warmup_epochs):
+        # 训练过程, train_one_epoch 这个好像很好用
         train_loss, train_top1, train_top5 = train_one_epoch(
             run_manager, args, epoch, args.warmup_epochs, args.warmup_lr)
 
